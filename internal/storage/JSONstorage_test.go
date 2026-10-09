@@ -31,6 +31,31 @@ func TestSaveJSON(t *testing.T) {
 	if len(getTask) != len(TestTasks) {
 		t.Fatalf("Количество задач не совпадает")
 	}
+	if TestTasks[0].ID != 1 {
+		t.Fatalf("Неверный ID. Ожидалось - 1 -, получили - %d - ", TestTasks[0].ID)
+	}
+	if TestTasks[0].Name != "Тренировка" {
+		t.Fatalf("Неверное Имя. Ожидалось - Тренировка -, получили - %s - ", TestTasks[0].Name)
+	}
+	if TestTasks[0].Description != "Присед, Жим, Тяга" {
+		t.Fatalf("Неверное Описание. Ожидалось - Присед, Жим, Тяга -, получили - %s - ", TestTasks[0].Description)
+	}
+	if TestTasks[0].Done != false {
+		t.Fatalf("Неверный статус. Ожидалось - false -, получили - %t - ", TestTasks[0].Done)
+	}
+
+	if TestTasks[1].ID != 2 {
+		t.Fatalf("Неверный ID. Ожидалось - 2 -, получили - %d - ", TestTasks[1].ID)
+	}
+	if TestTasks[1].Name != "Сходить в магазин" {
+		t.Fatalf("Неверное Имя. Ожидалось - Сходить в магазин -, получили - %s - ", TestTasks[1].Name)
+	}
+	if TestTasks[1].Description != "Молоко, Курица, Рис" {
+		t.Fatalf("Неверное Описание. Ожидалось - Молоко, Курица, Рис -, получили - %s - ", TestTasks[1].Description)
+	}
+	if TestTasks[1].Done != true {
+		t.Fatalf("Неверный статус. Ожидалось - true -, получили - %t - ", TestTasks[1].Done)
+	}
 
 }
 
