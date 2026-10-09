@@ -26,6 +26,15 @@ import (
 // load -fail "Путь файла" -format json/csv - загружает список задач из указанного файла в формате JSON или CSV
 func main() {
 	Tasks := make([]task.Task, 0)
+	if _, err := os.Stat(storage.StoragePath); os.IsNotExist(err) {
+		file, err := os.Create(storage.StoragePath)
+
+		if err != nil {
+			log.Fatalf("Ошибка создания файла при инициализации: %v", err)
+		}
+		file.Close()
+	}
+
 	data, err := os.ReadFile(storage.StoragePath)
 	if err != nil {
 		log.Fatalf("Ошибка чтения файла при инициализации: %v", err)
@@ -47,7 +56,7 @@ func main() {
 		TaskDescription := addFlagSet.String("desc", " ", "Описание новой задачи")
 		err := addFlagSet.Parse(os.Args[2:])
 		if err != nil {
-			log.Fatal("Ошибка парсинга add: %w", err)
+			log.Fatalf("Ошибка парсинга add: %v", err)
 		}
 
 		task.Add(&Tasks, *TaskName, *TaskDescription)
@@ -82,26 +91,33 @@ func main() {
 			log.Fatalf("Ошибка парсинга del: %v", err)
 		}
 
-		task.List(&Tasks, *filter)
+		list, err := task.List(&Tasks, *filter)
+		if err != nil {
+			log.Fatalf("Ошибка при выводе списка задач: %v", err)
+		}
+		task.PrintTasks(&list)
 
-	case "complite":
-		compliteFlagSet := flag.NewFlagSet("complite", flag.ExitOnError)
-		TasksID := compliteFlagSet.Int("task", 0, "Меняет статус задачи по ID")
+	case "complete":
+		completeFlagSet := flag.NewFlagSet("complete", flag.ExitOnError)
+		TasksID := completeFlagSet.Int("id", 0, "Меняет статус задачи по ID")
 
-		err = compliteFlagSet.Parse(os.Args[2:])
+		err = completeFlagSet.Parse(os.Args[2:])
 		if err != nil {
 			log.Fatalf("Ошибка при парсинге аргумента: %v", err)
 		}
 
-		task.SetDone(&Tasks, *TasksID)
+		err = task.SetDone(&Tasks, *TasksID)
+		if err != nil {
+			log.Fatalf("Ошибка при изменении статуса задачи: %v", err)
+		}
 		err = storage.SaveJSON(storage.StoragePath, &Tasks)
 		if err != nil {
-			log.Fatal("Ошибка сохранения: %w", err)
+			log.Fatalf("Ошибка сохранения: %v", err)
 		}
 
 	case "export":
 		exportFlagSet := flag.NewFlagSet("export", flag.ExitOnError)
-		failPath := exportFlagSet.String("fail", "", "Путь файла для экспорта")
+		failPath := exportFlagSet.String("out", "", "Путь файла для экспорта")
 		format := exportFlagSet.String("format", "", "Формат сохранения JSON или CSV")
 
 		err = exportFlagSet.Parse(os.Args[2:])
@@ -115,7 +131,7 @@ func main() {
 		case "csv":
 			err = storage.ExportCVS(*failPath, &Tasks)
 			if err != nil {
-				log.Fatal(err)
+				log.Fatalf("Ошибка экспорта: %v", err)
 			}
 		default:
 			log.Fatal("Не известный формат.")
@@ -123,7 +139,7 @@ func main() {
 
 	case "load":
 		loadFlagSet := flag.NewFlagSet("load", flag.ExitOnError)
-		failPath := loadFlagSet.String("fail", "", "Путь файла для импорта")
+		failPath := loadFlagSet.String("file", "", "Путь файла для импорта")
 		format := loadFlagSet.String("format", "", "Формат сохранения JSON или CSV")
 
 		err = loadFlagSet.Parse(os.Args[2:])
@@ -132,12 +148,12 @@ func main() {
 		case "json":
 			err = storage.LoadJSON(*failPath, storage.StoragePath, &Tasks)
 			if err != nil {
-				log.Fatal(err)
+				log.Fatalf("Ошибка импорта: %v", err)
 			}
 		case "csv":
 			err = storage.LoadCSV(*failPath, storage.StoragePath, &Tasks)
 			if err != nil {
-				log.Fatal(err)
+				log.Fatalf("Ошибка импорта: %v", err)
 			}
 		default:
 			log.Fatal("Не известный формат.")

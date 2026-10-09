@@ -13,12 +13,13 @@ func TestSaveJSON(t *testing.T) {
 		{ID: 1, Name: "Тренировка", Description: "Присед, Жим, Тяга", Done: false},
 		{ID: 2, Name: "Сходить в магазин", Description: "Молоко, Курица, Рис", Done: true},
 	}
-	err := SaveJSON("test.json", &TestTasks)
+	filePath := filepath.Join(t.TempDir(), "test.json")
+	err := SaveJSON(filePath, &TestTasks)
 	if err != nil {
 		t.Fatalf("SaveJSON вернул ошибку: %v", err)
 	}
 
-	data, err := os.ReadFile("test.json")
+	data, err := os.ReadFile(filePath)
 	if err != nil {
 		t.Fatalf("Ошибка чтения тестового файла json: %v", err)
 	}
@@ -75,8 +76,6 @@ func TestLoadJSON(t *testing.T) {
 	}
 
 	emptyFile.Close()
-	os.Remove("testEmpty.json")
-	os.Remove("test.json")
 }
 
 func TestExportJSON(t *testing.T) {
@@ -84,18 +83,19 @@ func TestExportJSON(t *testing.T) {
 		{ID: 1, Name: "Тренировка", Description: "Присед, Жим, Тяга", Done: false},
 		{ID: 2, Name: "Сходить в магазин", Description: "Молоко, Курица, Рис", Done: true},
 	}
-	file, err := os.Create("test.json")
+	filePath := filepath.Join(t.TempDir(), "test.json")
+	file, err := os.Create(filePath)
 	if err != nil {
 		t.Fatalf("Ошибка создания тестового файла json: %v", err)
 	}
 	file.Close()
 
-	err = ExportJSON("test.json", &TestTasks)
+	err = ExportJSON(filePath, &TestTasks)
 	if err != nil {
 		t.Fatalf("Ошибка экспорта: %v", err)
 	}
 
-	data, err := os.ReadFile("test.json")
+	data, err := os.ReadFile(filePath)
 	if err != nil {
 		t.Fatalf("Ошибка чтения тестового файла json: %v", err)
 	}
@@ -107,6 +107,4 @@ func TestExportJSON(t *testing.T) {
 	if len(getTask) != len(TestTasks) {
 		t.Fatalf("Количество задач не совпадает")
 	}
-
-	os.Remove("test.json")
 }

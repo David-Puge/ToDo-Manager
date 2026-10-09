@@ -53,7 +53,7 @@ func TestDel(t *testing.T) {
 		t.Fatalf("Ожидалась длина слайса 2, но получилось %d ", len(TestTasks))
 	}
 
-	if TestTasks[0].ID != 1 && TestTasks[1].ID != 2 {
+	if TestTasks[0].ID != 1 || TestTasks[1].ID != 2 {
 		t.Fatalf("Ожидалось ID задач 1 и 2 (упорядочить ID), но получилось %d и %d ", TestTasks[0].ID, TestTasks[1].ID)
 	}
 
@@ -71,4 +71,42 @@ func TestSetDone(t *testing.T) {
 	if TestTasks[0].Done != false {
 		t.Fatalf("Ожидалось статус задачи - false -, но получилось - %t -", TestTasks[0].Done)
 	}
+}
+
+func TestList(t *testing.T) {
+	TestTasks := []Task{
+		{ID: 1, Name: "Task 1", Description: "desc 1", Done: false},
+		{ID: 2, Name: "Task 2", Description: "desc 2", Done: true},
+		{ID: 3, Name: "Task 3", Description: "desc 3", Done: false},
+		{ID: 4, Name: "Task 4", Description: "desc 4", Done: true},
+		{ID: 5, Name: "Task 5", Description: "desc 5", Done: false},
+	}
+
+	all, err := List(&TestTasks, "all")
+	if err != nil {
+		t.Fatalf("Ошибка при выводе списка задач: %v", err)
+	}
+
+	if len(all) != 5 {
+		t.Fatalf("Ожидалась длина слайса 5, но получилось %d ", len(all))
+	}
+
+	done, err := List(&TestTasks, "done")
+	if err != nil {
+		t.Fatalf("Ошибка при выводе списка задач: %v", err)
+	}
+
+	if len(done) != 2 {
+		t.Fatalf("Ожидалась длина слайса 2, но получилось %d ", len(done))
+	}
+
+	pending, err := List(&TestTasks, "pending")
+	if err != nil {
+		t.Fatalf("Ошибка при выводе списка задач: %v", err)
+	}
+
+	if len(pending) != 3 {
+		t.Fatalf("Ожидалась длина слайса 3, но получилось %d ", len(pending))
+	}
+
 }

@@ -15,11 +15,12 @@ func SaveJSON(path string, tasks *[]task.Task) error {
 	if err != nil {
 		return fmt.Errorf("ошибка при кодировании JSON: %w", err)
 	}
+
 	err = os.WriteFile(path, data, 0644)
-	_, err = os.Stat(path)
 	if err != nil {
-		return fmt.Errorf("ошибка при проверке файла %s: %w", path, err)
+		return fmt.Errorf("ошибка при записи в файл файла %s: %w", path, err)
 	}
+
 	return nil
 }
 
@@ -48,11 +49,15 @@ func ExportJSON(JsonPath string, tasks *[]task.Task) error {
 		return fmt.Errorf("ошибка при кодировании JSON: %w", err)
 	}
 
-	err = os.WriteFile(JsonPath, data, 0644)
 	_, err = os.Stat(JsonPath)
 	if err != nil {
 		return fmt.Errorf("ошибка при проверке файла %s: %w", JsonPath, err)
 	}
+	err = os.WriteFile(JsonPath, data, 0644)
+	if err != nil {
+		return fmt.Errorf("ошибка при записи в файл файла %s: %w", JsonPath, err)
+	}
+
 	return nil
 
 }

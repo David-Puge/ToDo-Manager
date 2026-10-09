@@ -2,7 +2,6 @@ package task
 
 import (
 	"fmt"
-	"log"
 	"os"
 	"text/tabwriter"
 )
@@ -28,12 +27,11 @@ func Add(tasks *[]Task, TaskName string, TaskDescription string) {
 // Del удаляет задачу из списка задач по её ID.
 func Del(tasks *[]Task, id int) error {
 	if id <= 0 {
-		err := fmt.Errorf("Ошибка! ID не может быть меньше или ровен нулю./n")
-		return err
+		return fmt.Errorf("Ошибка! ID не может быть меньше или ровен нулю./n")
 	}
 	if id > len(*tasks) {
-		err := fmt.Errorf("Ошибка! ID не может быть больше чем количество задач./n")
-		return err
+
+		return fmt.Errorf("Ошибка! ID не может быть больше чем количество задач: n")
 	}
 
 	for i, task := range *tasks {
@@ -50,56 +48,56 @@ func Del(tasks *[]Task, id int) error {
 }
 
 // List выводит список задач в зависимости от фильтра.
-func List(tasks *[]Task, filter string) {
+func List(tasks *[]Task, filter string) ([]Task, error) {
+
+	resultTasks := make([]Task, 0)
+
+	if filter == "done" {
+		for _, task := range *tasks {
+			if task.Done == true {
+				resultTasks = append(resultTasks, task)
+			}
+		}
+	} else if filter == "pending" {
+		for _, task := range *tasks {
+			if task.Done == false {
+				resultTasks = append(resultTasks, task)
+			}
+		}
+	} else if filter == "all" {
+		for _, task := range *tasks {
+			resultTasks = append(resultTasks, task)
+		}
+		return resultTasks, nil
+	} else {
+		return nil, fmt.Errorf("Ошибка! Фильтр может быть только all/done/pending")
+	}
+	return resultTasks, nil
+}
+
+func PrintTasks(tasks *[]Task) {
 	w := tabwriter.NewWriter(os.Stdout, 1, 1, 3, ' ', 0)
 	defer w.Flush()
 
-	if filter == "all" {
-		fmt.Println("=== ВСЕ ЗАДАЧИ ===")
-		for _, task := range *tasks {
-			done := "[ ]"
-			if task.Done == true {
-				done = "[Х]"
-			}
-			fmt.Fprintf(w, "%d\t%s\t%s\t%s\n", task.ID, task.Name, task.Description, done)
-
+	fmt.Fprintln(w, "ID\tName\tDescription\tDone")
+	for _, task := range *tasks {
+		done := "[ ]"
+		if task.Done {
+			done = "[X]"
 		}
-	}
-	if filter == "done" {
-		fmt.Println("=== ВЫПОЛНЕНЫЕ ЗАДАЧИ ===")
-		for _, task := range *tasks {
-			done := "[ ]"
-			if task.Done == true {
-				done = "[Х]"
-			}
-			if task.Done == true {
-				fmt.Fprintf(w, "%d\t%s\t%s\t%s\n", task.ID, task.Name, task.Description, done)
-			}
-		}
-	}
-	if filter == "pending" {
-		fmt.Println("=== АКТУАЛЬНЫЕ ЗАДАЧИ ===")
-		for _, task := range *tasks {
-			done := "[ ]"
-			if task.Done == true {
-				done = "[Х]"
-			}
-			if task.Done == false {
-				fmt.Fprintf(w, "%d\t%s\t%s\t%s\n", task.ID, task.Name, task.Description, done)
-			}
-		}
+		fmt.Fprintf(w, "%d\t%s\t%s\t%s\n", task.ID, task.Name, task.Description, done)
 	}
 }
 
 // SetDone изменяет статус задачи на противоположный (выполнено/не выполнено) по её ID.
-func SetDone(tasks *[]Task, id int) {
+func SetDone(tasks *[]Task, id int) error {
 	if id <= 0 {
-		log.Fatal("Ошибка! ID не может быть меньше или ровен нулю./n")
-		os.Exit(1)
+		return fmt.Errorf("Ошибка! ID не может быть меньше или ровен нулю./n")
 	}
 	for i, task := range *tasks {
 		if task.ID == id {
 			(*tasks)[i].Done = !(*tasks)[i].Done
 		}
 	}
+	return nil
 }

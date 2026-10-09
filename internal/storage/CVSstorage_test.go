@@ -56,8 +56,10 @@ func TestLoadCSV(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Ошибка экспорта: %v", err)
 	}
-
 	emptyFilePath := filepath.Join(t.TempDir(), "testemptyCSV.csv")
+	if err := os.WriteFile(emptyFilePath, []byte("[]"), 0644); err != nil {
+		t.Fatalf("Ошибка создания файла для задач: %v", err)
+	}
 
 	err = LoadCSV(filePath, emptyFilePath, &TestTasks)
 	if err != nil {
@@ -79,4 +81,17 @@ func TestLoadCSV(t *testing.T) {
 
 	}
 
+}
+
+func TestLoadCSVRejectsIncompleteRow(t *testing.T) {
+	filePath := filepath.Join(t.TempDir(), "incomplete.csv")
+	csvData := "ID;Name;Description;Done\n1;Только имя\n"
+	if err := os.WriteFile(filePath, []byte(csvData), 0644); err != nil {
+		t.Fatalf("Ошибка создания тестового файла csv: %v", err)
+	}
+
+	err := LoadCSV(filePath, filepath.Join(t.TempDir(), "todo.json"), &[]task.Task{})
+	if err == nil {
+		t.Fatal("ожидалась ошибка для строки CSV с недостающими колонками")
+	}
 }

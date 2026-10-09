@@ -60,8 +60,17 @@ func LoadCSV(CsvPath string, StoragePath string, tasks *[]task.Task) error {
 
 	LoadTasks := []task.Task{}
 
+	if len(data) < 2 {
+		return fmt.Errorf("CSV файл пуст или не содержит данных")
+	}
+	if data[0][0] != "ID" || data[0][1] != "Name" || data[0][2] != "Description" || data[0][3] != "Done" {
+		return fmt.Errorf("CSV файл не содержит правильный заголовок")
+	}
 	for i := 1; i < len(data); i++ {
 		row := data[i]
+		if len(row) < 4 {
+			return fmt.Errorf("строка %d: ожидалось 4 колонки (ID, Name, Description, Done), получено %d", i+1, len(row))
+		}
 
 		id, err := strconv.Atoi(row[0])
 		if err != nil {
@@ -81,7 +90,10 @@ func LoadCSV(CsvPath string, StoragePath string, tasks *[]task.Task) error {
 
 		LoadTasks = append(LoadTasks, task)
 	}
-	SaveJSON(StoragePath, &LoadTasks)
+	err = SaveJSON(StoragePath, &LoadTasks)
+	if err != nil {
+		return fmt.Errorf("Ошибка сохранения: %w", err)
+	}
 
 	return nil
 }
